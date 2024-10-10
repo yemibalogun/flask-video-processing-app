@@ -49,14 +49,33 @@
                             <input type="file" name="watermark" required><br><br>
                         </div>
                     </div>
-                    
+
+                    <div class="row">
+                        <div class="col">
+                            <label for="num_versions">Number of Variations:</label>
+                        </div>
+                        <div class="col">
+                            <input type="number" name="num_versions" min="1" max="100" value="50" required><br><br>
+                        </div>
+                    </div>
+
                     <button class="btn btn-primary" type="submit">Process Video</button>
+                    
                 </form>
 
-                {% if zip_file %}
-                <h2>Download Processed Videos:</h2>
-                <a href="{{ url_for('download_file', filename=zip_file) }}" class="btn btn-success">Download All Videos</a>
-                {% endif %}
+                <div id="loading" style="display:none;">
+                    <p>Processing your videos, please wait...</p>
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+
+                <div id="download" style="display: none;">
+                    <h2>Download Processed Videos:</h2>
+                    <a href="" id="downloadLink" class="btn btn-success">Download ZIP</a>
+                    
+                </div>
+                
             </div>
             
           </div>
@@ -68,6 +87,36 @@
         import { Ripple, initMDB } from "mdb-ui-kit";
 
         initMDB({ Ripple });
+
+        document.getElementById("videoForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            var formData = new FormData(this);
+
+            // Show the loading spinner 
+            document.getElementById("loading").style.display = "block";
+
+            // Hide the form and download link initially
+            document.getElementById("download").style.display = "none";
+
+            // Perform an AJAX request to upload the file and process the video
+            fetch("/", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide the loading spinner
+                document.getElementById("loading").style.display = "none";
+
+                // Show the download lind
+                document.getElementById("downloadLink").href = "/download/" + data.zip_file;
+                document.getElementById("download").style.display = "block";
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
     </script>
 </body>
 </html>

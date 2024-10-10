@@ -2,9 +2,7 @@ import os
 import zipfile
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 from werkzeug.utils import secure_filename
-from utils import allowed_file, process_video, generate_unique_videos
-
-import hashlib
+from utils import generate_unique_videos
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/videos/'
@@ -27,6 +25,7 @@ def upload_file():
         
         video = request.files['video']
         watermark = request.files['watermark']
+        num_versions = int(request.form.get('num_versions', 50)) # Get the number of versions from the form 
         
         if video and watermark:
             video_filename = secure_filename(video.filename)
@@ -47,7 +46,7 @@ def upload_file():
                 return redirect(request.url)
             
             # Generate unique videos
-            unique_videos = generate_unique_videos(video_path, watermark_path, app.config['OUTPUT_FOLDER'], num_versions=50)
+            unique_videos = generate_unique_videos(video_path, watermark_path, app.config['OUTPUT_FOLDER'], num_versions)
             
             # Create a zip file containing all processed videos
             zip_filename = f"processed_videos.zip"
