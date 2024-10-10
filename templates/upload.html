@@ -30,13 +30,13 @@
             <div class="card-header">Process video</div>
 
             <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" id="videoForm" enctype="multipart/form-data">
                     <div class="row">
                         <div class="col">
                             <label for="video">Upload Video:</label>
                         </div>
                         <div class="col">
-                            <input type="file" name="video" required><br><br>
+                            <input type="file" name="video" id="video" accept=".mp4, .mov, .avi, .mkv" required><br><br>
                         </div>
 
                     </div>
@@ -46,7 +46,7 @@
                             <label for="watermark">Upload Watermark:</label>
                         </div>
                         <div class="col">
-                            <input type="file" name="watermark" required><br><br>
+                            <input type="file" name="watermark" id="watermark" accept=".png, .jpg, .jpeg" required><br><br>
                         </div>
                     </div>
 
@@ -55,13 +55,14 @@
                             <label for="num_versions">Number of Variations:</label>
                         </div>
                         <div class="col">
-                            <input type="number" name="num_versions" min="1" max="100" value="50" required><br><br>
+                            <input type="number" id="num_versions" name="num_versions" min="1" value="50" required><br><br>
                         </div>
                     </div>
 
                     <button class="btn btn-primary" type="submit">Process Video</button>
                     
                 </form>
+                <br>
 
                 <div id="loading" style="display:none;">
                     <p>Processing your videos, please wait...</p>
@@ -81,17 +82,19 @@
           </div>
 
     </div>
+
+    <!-- MDB -->
+    <script
+    type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/8.0.0/mdb.umd.min.js"
+    ></script>
     
     <script>
-        // Initialization for ES Users
-        import { Ripple, initMDB } from "mdb-ui-kit";
-
-        initMDB({ Ripple });
-
         document.getElementById("videoForm").addEventListener("submit", function(event) {
             event.preventDefault();
 
             var formData = new FormData(this);
+            console.log("Form data prepared:", formData); // Log the FormData object
 
             // Show the loading spinner 
             document.getElementById("loading").style.display = "block";
@@ -104,19 +107,31 @@
                 method: "POST",
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                // Check if the response is OK (status in the range 200-299)
+                if (!response.ok) {
+                    return response.text().then(text => { 
+                        throw new Error(`Error: ${response.status} - ${text}`); 
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log("Response data:", data); // Log the response data
                 // Hide the loading spinner
                 document.getElementById("loading").style.display = "none";
 
-                // Show the download lind
+                // Set download link and display it
                 document.getElementById("downloadLink").href = "/download/" + data.zip_file;
                 document.getElementById("download").style.display = "block";
             })
             .catch(error => {
                 console.error('Error:', error);
+                // Hide the loading spinner in case of an error
+                document.getElementById("loading").style.display = "none";
             });
         });
+
     </script>
 </body>
 </html>

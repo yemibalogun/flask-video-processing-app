@@ -3,7 +3,7 @@ import subprocess
 import random
 from concurrent.futures import ProcessPoolExecutor
 
-ALLOWED_EXTENSIONS = {'mp4', 'mov', 'avi', 'mkv'}
+ALLOWED_EXTENSIONS = {'mp4', 'mov', 'avi', 'mkv', 'jpg', 'png', 'jpeg'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -70,7 +70,8 @@ def generate_unique_videos(video_path, watermark_path, output_folder, num_versio
     
     os.makedirs(output_folder, exist_ok=True)
     
-    with ProcessPoolExecutor(max_workers=4) as executor:  # Use 4 workers
+    max_workers = os.cpu_count() # Dynamic worker count based on CPU cores
+    with ProcessPoolExecutor(max_workers) as executor:  # Use 4 workers
         futures = [
             executor.submit(process_single_video, i, video_path, watermark_path, output_folder, width, height)
             for i in range(num_versions)
@@ -80,5 +81,7 @@ def generate_unique_videos(video_path, watermark_path, output_folder, num_versio
             result = future.result()
             if result:
                 unique_videos.append(result)
+            else:
+                print("One of the processes failed.")
     
     return unique_videos
