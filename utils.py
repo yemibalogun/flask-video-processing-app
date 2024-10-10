@@ -22,7 +22,6 @@ def process_single_video(i, video_path, watermark_path, output_folder, width, he
     logging.info(f"Processing video {i}: {video_path}")
     start_time = time.time()
 
-
     ffmpeg_command = [
         'ffmpeg',
         '-i', video_path,
@@ -34,15 +33,16 @@ def process_single_video(i, video_path, watermark_path, output_folder, width, he
         f"[1]scale=150:84[wm];"
         f"[with_bg][wm]overlay=W-w-10:H-h-10,"
         f"eq=brightness={brightness}:contrast={contrast}",
+        '-vsync', 'cfr',  # Ensure a constant frame rate
         '-c:v', 'libx264',
         '-preset', 'ultrafast',
-        '-crf', '23',  # Balance between quality and file size
-        '-c:a', 'copy',  # Copy audio without re-encoding
-        '-movflags', '+faststart',  # Optimize for web streaming
+        '-crf', '23',
+        '-c:a', 'copy',
+        '-movflags', '+faststart',
         '-y',
         output_video
     ]
-    
+
     # Log the FFmpeg command
     logging.info(f"FFmpeg command for video {i}: {' '.join(ffmpeg_command)}")
 
