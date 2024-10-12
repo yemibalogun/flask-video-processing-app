@@ -15,8 +15,8 @@ def allowed_file(filename):
 
 def process_single_video(i, video_path, watermark_path, output_folder, width, height):
     output_video = os.path.join(output_folder, f"video_{i}.mp4")
-    brightness = random.uniform(0.95, 1.05)
-    contrast = random.uniform(0.95, 1.05)
+    brightness = 1
+    contrast = 0.95
     
     # Start logging the video processing
     logging.info(f"Processing video {i}: {video_path}")
@@ -27,16 +27,13 @@ def process_single_video(i, video_path, watermark_path, output_folder, width, he
         '-i', video_path,
         '-i', watermark_path,
         '-filter_complex',
-        f"color=white:{width}x{height}[bg];"
-        f"[0]scale={width}:{height}:force_original_aspect_ratio=decrease[video];"
-        f"[bg][video]overlay=x=(W-w)/2:y=(H-h)/2[with_bg];"
-        f"[1]scale=150:84[wm];"
-        f"[with_bg][wm]overlay=W-w-10:H-h-10,"
-        f"eq=brightness={brightness}:contrast={contrast}",
+        f"[0:v]scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2[video];"
+        f"[1:v]scale=150:150[wm];"
+        f"[video][wm]overlay=W-w-10:H-h-10,eq=brightness={brightness}:contrast={contrast}",
         '-vsync', 'cfr',  # Ensure a constant frame rate
         '-c:v', 'libx264',
         '-preset', 'ultrafast',
-        '-crf', '23',
+        '-crf', '25',
         '-c:a', 'copy',
         '-movflags', '+faststart',
         '-y',
